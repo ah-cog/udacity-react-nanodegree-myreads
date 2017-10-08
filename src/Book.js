@@ -4,16 +4,13 @@ class Book extends Component {
   state = {
     value: "none"
   }
-
   handleChange = (e) => {
     this.setState({ value: e.target.value })
-    this.props.changeShelf({ book: this.props.book, shelf: e.target.value })
+    this.props.onChangeShelf({ book: this.props.book, shelf: e.target.value })
   }
-
   componentDidMount() {
     this.setState({ value: this.props.book.shelf })
   }
-
   render() {
     return (
       <div className="book">
