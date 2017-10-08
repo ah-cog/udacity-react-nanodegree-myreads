@@ -6,7 +6,12 @@ class Book extends Component {
   }
 
   handleChange = (e) => {
+    this.setState({ value: e.target.value })
     this.props.changeShelf({ book: this.props.book, shelf: e.target.value })
+  }
+
+  componentDidMount() {
+    this.setState({ value: this.props.book.shelf })
   }
 
   render() {
@@ -25,7 +30,9 @@ class Book extends Component {
             </div>
           </div>
           <div className="book-title">{this.props.book.title}</div>
-          <div className="book-authors">{this.props.book.authors.join(",")}</div>
+          {this.props.book.authors && (
+            <div className="book-authors">{this.props.book.authors.join(",")}</div>
+          )}
       </div>
     )
   }

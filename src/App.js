@@ -6,7 +6,8 @@ import { Link, Route } from 'react-router-dom'
 
 class BooksApp extends React.Component {
   state = {
-    books: []
+    books: [],
+    results: []
   }
   componentDidMount() {
     BooksAPI.getAll().then((books) => {
@@ -14,15 +15,31 @@ class BooksApp extends React.Component {
     })
   }
   changeShelf = ({ book, shelf }) => {
-    BooksAPI.update(book, shelf).then((b) => {
+    BooksAPI.update(book, shelf).then((data) => {
       BooksAPI.get(book.id).then((updatedBook) => {
         // Update state based on previous state
         this.setState((state) => {
           state.books = state.books
-            .filter((cb) => cb.id !== book.id)
+            .filter((filterBook) => filterBook.id !== book.id)
             .concat(updatedBook)
         })
       })
+    })
+  }
+  searchBooks = (e) => {
+    const query = e.target.value
+    BooksAPI.search(query, 20).then((data) => {
+      if (data) {
+        data = data.map((resultBook) => {
+          const existingBook = this.state.books.filter((book) => resultBook.id === book.id)
+          if (existingBook.length > 0) {
+            return existingBook[0]
+          } else {
+            return resultBook
+          }
+        })
+      }
+      this.setState({ results: data || [] })
     })
   }
   render() {
@@ -31,7 +48,9 @@ class BooksApp extends React.Component {
         <Route path="/search" render={() => (
           <div className="search-books">
             <div className="search-books-bar">
-              <Link to="/" className="close-search">Close</Link>
+              <Link to="/" className="close-search" onClick={() => {
+                this.setState({ results: [] })
+              }}>Close</Link>
               <div className="search-books-input-wrapper">
                 {/*
                   NOTES: The search from BooksAPI is limited to a particular set of search terms.
@@ -41,12 +60,14 @@ class BooksApp extends React.Component {
                   However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
                   you don't find a specific author or title. Every search is limited by search terms.
                 */}
-                <input type="text" placeholder="Search by title or author"/>
+                <input type="text" placeholder="Search by title or author" onChange={this.searchBooks}/>
 
               </div>
             </div>
             <div className="search-books-results">
-              <ol className="books-grid"></ol>
+              <ol className="books-grid">
+                <Bookshelf books={this.state.results} changeShelf={this.changeShelf} />
+              </ol>
             </div>
           </div>
         )}/>
